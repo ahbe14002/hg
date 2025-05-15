@@ -1,0 +1,1073 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستم حضور و غیاب کارمندان</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        @font-face {
+            font-family: 'IranNastaliq';
+            src: url('https://cdn.jsdelivr.net/gh/rastikerdar/iranianfonts@master/fonts/IranNastaliq/IranNastaliq.woff') format('woff');
+            font-weight: normal;
+            font-style: normal;
+        }
+        
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f8f7f1;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23dbd1b3' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+        
+        .nastaliq {
+            font-family: 'IranNastaliq', serif;
+        }
+        
+        .persian-pattern {
+            background-color: #f8f7f1;
+            background-image: url("data:image/svg+xml,%3Csvg width='42' height='44' viewBox='0 0 42 44' xmlns='http://www.w3.org/2000/svg'%3E%3Cg id='Page-1' fill='none' fill-rule='evenodd'%3E%3Cg id='brick-wall' fill='%23b3a683' fill-opacity='0.1'%3E%3Cpath d='M0 0h42v44H0V0zm1 1h40v20H1V1zM0 23h20v20H0V23zm22 0h20v20H22V23z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        
+        .btn-primary {
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+        
+        .table-row-animate {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .tab-active {
+            border-bottom: 3px solid #1e40af;
+            color: #1e40af;
+            font-weight: 600;
+        }
+        
+        .persian-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            background-color: #fff;
+            border: 1px solid #e5e0d5;
+        }
+        
+        .persian-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            border-radius: 15px 15px 0 0;
+            padding: 1.5rem;
+            color: white;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .persian-header::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5z' fill='%23ffffff' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.3;
+        }
+        
+        .persian-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            width: 100%;
+            border-radius: 0 0 15px 15px;
+            overflow: hidden;
+        }
+        
+        .persian-table thead {
+            background: linear-gradient(90deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+        }
+        
+        .persian-table th {
+            padding: 1rem;
+            text-align: right;
+            font-weight: 600;
+        }
+        
+        .persian-table td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #e5e0d5;
+        }
+        
+        .persian-table tbody tr:nth-child(even) {
+            background-color: #f8f7f1;
+        }
+        
+        .persian-table tbody tr:hover {
+            background-color: #f0ebdf;
+        }
+        
+        .persian-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .persian-input {
+            border: 2px solid #e5e0d5;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .persian-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        
+        .persian-button {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .persian-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .persian-button:active {
+            transform: translateY(0);
+        }
+        
+        .persian-button::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+            transform: translateX(-100%);
+            transition: transform 0.6s ease;
+        }
+        
+        .persian-button:hover::after {
+            transform: translateX(100%);
+        }
+        
+        .persian-modal {
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border: 1px solid #e5e0d5;
+        }
+        
+        .persian-modal-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+            border-radius: 15px 15px 0 0;
+            padding: 1rem 1.5rem;
+            color: white;
+        }
+        
+        .persian-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .badge-success {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .badge-neutral {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        
+        .clock-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 1.25rem;
+            color: #4b5563;
+        }
+        
+        .clock-segment {
+            background-color: #f3f4f6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+        }
+        
+        .clock-divider {
+            font-weight: bold;
+        }
+        
+        .export-button {
+            background: linear-gradient(135deg, #10b981 0%, #047857 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .export-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .export-button:active {
+            transform: translateY(0);
+        }
+        
+        .export-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .export-dropdown-content {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 100%;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .export-dropdown:hover .export-dropdown-content {
+            display: block;
+        }
+        
+        .export-option {
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            color: #333;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        
+        .export-option:hover {
+            background-color: #f0f9ff;
+        }
+        
+        .export-icon {
+            margin-left: 8px;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- بسم الله و تاریخ و ساعت -->
+        <div class="persian-card mb-8">
+            <div class="persian-header">
+                <h1 class="nastaliq text-4xl mb-4">بسم الله الرحمن الرحیم</h1>
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <div id="persianDate" class="text-lg mb-2 md:mb-0"></div>
+                    <div id="clock" class="clock-container"></div>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <h2 class="text-3xl font-bold text-center text-blue-800 mb-6">سیستم حضور و غیاب کارمندان</h2>
+                
+                <!-- تب‌ها -->
+                <div class="flex border-b mb-6">
+                    <button id="attendanceTabBtn" class="px-4 py-2 tab-active">حضور و غیاب</button>
+                    <button id="employeesTabBtn" class="px-4 py-2">لیست کارمندان</button>
+                </div>
+                
+                <!-- بخش حضور و غیاب -->
+                <div id="attendanceTab">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-8">
+                        <div class="w-full md:w-2/3 bg-blue-50 p-4 rounded-lg border border-blue-100">
+                            <div class="flex flex-col md:flex-row gap-4">
+                                <div class="flex-grow">
+                                    <label for="employeeCode" class="block text-sm font-medium text-gray-700 mb-1">کد پرسنلی:</label>
+                                    <input type="text" id="employeeCode" class="persian-input w-full" placeholder="کد پرسنلی خود را وارد کنید">
+                                </div>
+                                <div class="flex gap-2 mt-4 md:mt-0">
+                                    <button id="checkInBtn" class="persian-button bg-green-600 hover:bg-green-700 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd" />
+                                        </svg>
+                                        ثبت ورود
+                                    </button>
+                                    <button id="checkOutBtn" class="persian-button bg-red-600 hover:bg-red-700 flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
+                                        </svg>
+                                        ثبت خروج
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- نمایش اطلاعات کارمند -->
+                            <div id="employeeInfo" class="mt-4 p-3 bg-white rounded-md border border-blue-200 hidden">
+                                <h3 class="font-bold text-blue-800 mb-2">اطلاعات کارمند:</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    <div>
+                                        <span class="text-gray-600">نام و نام خانوادگی:</span>
+                                        <span id="infoFullName" class="font-medium mr-1"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">سمت:</span>
+                                        <span id="infoPosition" class="font-medium mr-1"></span>
+                                    </div>
+                                    <div>
+                                        <span class="text-gray-600">بخش:</span>
+                                        <span id="infoDepartment" class="font-medium mr-1"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col md:flex-row gap-2">
+                            <button id="registerBtn" class="persian-button w-full md:w-auto flex items-center justify-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                                </svg>
+                                ثبت نام کارمند جدید
+                            </button>
+                            
+                            <div class="export-dropdown">
+                                <button class="export-button">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                    خروجی گرفتن
+                                </button>
+                                <div class="export-dropdown-content">
+                                    <a id="exportAttendanceJson" class="export-option">
+                                        <div class="flex items-center">
+                                            <span class="export-icon">📄</span>
+                                            خروجی JSON حضور و غیاب
+                                        </div>
+                                    </a>
+                                    <a id="exportAttendanceExcel" class="export-option">
+                                        <div class="flex items-center">
+                                            <span class="export-icon">📊</span>
+                                            خروجی اکسل حضور و غیاب
+                                        </div>
+                                    </a>
+                                    <a id="exportEmployeesJson" class="export-option">
+                                        <div class="flex items-center">
+                                            <span class="export-icon">📄</span>
+                                            خروجی JSON کارمندان
+                                        </div>
+                                    </a>
+                                    <a id="exportEmployeesExcel" class="export-option">
+                                        <div class="flex items-center">
+                                            <span class="export-icon">📊</span>
+                                            خروجی اکسل کارمندان
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="persian-table">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">ردیف</th>
+                                    <th>کد پرسنلی</th>
+                                    <th>نام و نام خانوادگی</th>
+                                    <th>تاریخ</th>
+                                    <th>زمان ورود</th>
+                                    <th>زمان خروج</th>
+                                    <th>مدت حضور</th>
+                                    <th>وضعیت</th>
+                                </tr>
+                            </thead>
+                            <tbody id="attendanceTable">
+                                <!-- جدول حضور و غیاب اینجا پر می‌شود -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- بخش لیست کارمندان -->
+                <div id="employeesTab" class="hidden">
+                    <div class="mb-6 flex justify-between">
+                        <div class="export-dropdown">
+                            <button class="export-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                                خروجی گرفتن
+                            </button>
+                            <div class="export-dropdown-content">
+                                <a id="exportEmployeesJsonTab" class="export-option">
+                                    <div class="flex items-center">
+                                        <span class="export-icon">📄</span>
+                                        خروجی JSON کارمندان
+                                    </div>
+                                </a>
+                                <a id="exportEmployeesExcelTab" class="export-option">
+                                    <div class="flex items-center">
+                                        <span class="export-icon">📊</span>
+                                        خروجی اکسل کارمندان
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <button id="registerBtnTab" class="persian-button flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+                            </svg>
+                            ثبت نام کارمند جدید
+                        </button>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="persian-table">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">ردیف</th>
+                                    <th>کد پرسنلی</th>
+                                    <th>نام و نام خانوادگی</th>
+                                    <th>سمت</th>
+                                    <th>بخش</th>
+                                    <th>تاریخ ثبت نام</th>
+                                    <th>عملیات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="employeesTable">
+                                <!-- جدول کارمندان اینجا پر می‌شود -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- مدال ثبت نام -->
+    <div id="registerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="persian-modal w-full max-w-md mx-4">
+            <div class="persian-modal-header flex justify-between items-center">
+                <h2 class="text-xl font-bold">ثبت نام کارمند جدید</h2>
+                <button id="closeRegisterModal" class="text-white hover:text-gray-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <div>
+                    <label for="employeeCodeInput" class="block text-sm font-medium text-gray-700 mb-1">کد پرسنلی:</label>
+                    <input type="text" id="employeeCodeInput" class="persian-input w-full" placeholder="کد پرسنلی را وارد کنید">
+                    <p class="text-xs text-gray-500 mt-1">کد پرسنلی باید حداقل 4 کاراکتر باشد</p>
+                </div>
+                
+                <div>
+                    <label for="fullName" class="block text-sm font-medium text-gray-700 mb-1">نام و نام خانوادگی:</label>
+                    <input type="text" id="fullName" class="persian-input w-full" placeholder="نام و نام خانوادگی را وارد کنید">
+                </div>
+                
+                <div>
+                    <label for="position" class="block text-sm font-medium text-gray-700 mb-1">سمت:</label>
+                    <input type="text" id="position" class="persian-input w-full" placeholder="سمت شغلی را وارد کنید">
+                </div>
+                
+                <div>
+                    <label for="department" class="block text-sm font-medium text-gray-700 mb-1">بخش:</label>
+                    <select id="department" class="persian-input w-full">
+                        <option value="">انتخاب کنید</option>
+                        <option value="مدیریت">مدیریت</option>
+                        <option value="منابع انسانی">منابع انسانی</option>
+                        <option value="مالی">مالی</option>
+                        <option value="فنی">فنی</option>
+                        <option value="بازاریابی">بازاریابی</option>
+                        <option value="فروش">فروش</option>
+                        <option value="پشتیبانی">پشتیبانی</option>
+                        <option value="کتابخانه">کتابخانه</option>
+                    </select>
+                </div>
+                
+                <div class="flex justify-end">
+                    <button id="saveEmployeeBtn" class="persian-button">
+                        ثبت اطلاعات
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // تابع تبدیل تاریخ میلادی به شمسی
+        function toJalali(gy, gm, gd) {
+            var g_d_m = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+            var jy = (gy <= 1600) ? 0 : 979;
+            gy -= (gy <= 1600) ? 621 : 1600;
+            var gy2 = (gm > 2) ? (gy + 1) : gy;
+            var days = (365 * gy) + (parseInt((gy2 + 3) / 4)) - (parseInt((gy2 + 99) / 100)) + (parseInt((gy2 + 399) / 400)) - 80 + gd + g_d_m[gm - 1];
+            jy += 33 * (parseInt(days / 12053));
+            days %= 12053;
+            jy += 4 * (parseInt(days / 1461));
+            days %= 1461;
+            jy += parseInt((days - 1) / 365);
+            if (days > 365) days = (days - 1) % 365;
+            var jm = (days < 186) ? 1 + parseInt(days / 31) : 7 + parseInt((days - 186) / 30);
+            var jd = 1 + ((days < 186) ? (days % 31) : ((days - 186) % 30));
+            return [jy, jm, jd];
+        }
+        
+        // نام ماه‌های شمسی
+        const jalaliMonths = [
+            'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+            'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+        ];
+        
+        // نام روزهای هفته
+        const jalaliWeekdays = [
+            'یکشنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه'
+        ];
+        
+        // تابع نمایش تاریخ شمسی
+        function showPersianDate() {
+            const now = new Date();
+            const [jYear, jMonth, jDay] = toJalali(now.getFullYear(), now.getMonth() + 1, now.getDate());
+            const weekday = jalaliWeekdays[now.getDay()];
+            const monthName = jalaliMonths[jMonth - 1];
+            
+            document.getElementById('persianDate').textContent = `${weekday}، ${jDay} ${monthName} ${jYear}`;
+        }
+        
+        // تابع نمایش ساعت
+        function showClock() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            
+            document.getElementById('clock').innerHTML = `
+                <div class="clock-segment">${hours}</div>
+                <div class="clock-divider">:</div>
+                <div class="clock-segment">${minutes}</div>
+                <div class="clock-divider">:</div>
+                <div class="clock-segment">${seconds}</div>
+            `;
+        }
+        
+        // به‌روزرسانی تاریخ و ساعت
+        showPersianDate();
+        showClock();
+        setInterval(showClock, 1000);
+        
+        // ذخیره داده‌ها در localStorage
+        let employees = JSON.parse(localStorage.getItem('employees')) || {};
+        let attendance = JSON.parse(localStorage.getItem('attendance')) || [];
+        
+        // تبدیل تاریخ میلادی به شمسی برای نمایش
+        function formatJalaliDate(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            const [jYear, jMonth, jDay] = toJalali(date.getFullYear(), date.getMonth() + 1, date.getDate());
+            return `${jYear}/${jMonth.toString().padStart(2, '0')}/${jDay.toString().padStart(2, '0')}`;
+        }
+        
+        // تبدیل زمان به فرمت مناسب
+        function formatTime(dateStr) {
+            if (!dateStr) return '-';
+            const date = new Date(dateStr);
+            return date.toLocaleTimeString('fa-IR', { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        // نمایش جدول حضور و غیاب
+        function renderAttendanceTable() {
+            const tableBody = document.getElementById('attendanceTable');
+            tableBody.innerHTML = '';
+            
+            if (attendance.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `<td colspan="8" class="py-4 text-center text-gray-500">هیچ رکوردی یافت نشد</td>`;
+                tableBody.appendChild(emptyRow);
+                return;
+            }
+            
+            attendance.forEach((record, index) => {
+                const employee = employees[record.employeeCode] || { fullName: 'نامشخص' };
+                const row = document.createElement('tr');
+                row.className = 'table-row-animate hover:bg-blue-50';
+                
+                // محاسبه مدت حضور
+                let duration = '';
+                if (record.checkInTime && record.checkOutTime) {
+                    const checkIn = new Date(record.checkInTime);
+                    const checkOut = new Date(record.checkOutTime);
+                    const diff = checkOut - checkIn;
+                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    duration = `${hours} ساعت و ${minutes} دقیقه`;
+                }
+                
+                row.innerHTML = `
+                    <td class="text-center">${index + 1}</td>
+                    <td>${record.employeeCode}</td>
+                    <td>${employee.fullName}</td>
+                    <td>${formatJalaliDate(record.checkInTime)}</td>
+                    <td>${formatTime(record.checkInTime)}</td>
+                    <td>${formatTime(record.checkOutTime)}</td>
+                    <td>${duration || '-'}</td>
+                    <td>
+                        ${record.checkOutTime ? 
+                            '<span class="persian-badge badge-neutral">خروج</span>' : 
+                            '<span class="persian-badge badge-success">حاضر</span>'
+                        }
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // نمایش جدول کارمندان
+        function renderEmployeesTable() {
+            const tableBody = document.getElementById('employeesTable');
+            tableBody.innerHTML = '';
+            
+            const employeesList = Object.entries(employees);
+            
+            if (employeesList.length === 0) {
+                const emptyRow = document.createElement('tr');
+                emptyRow.innerHTML = `<td colspan="7" class="py-4 text-center text-gray-500">هیچ کارمندی ثبت نشده است</td>`;
+                tableBody.appendChild(emptyRow);
+                return;
+            }
+            
+            employeesList.forEach(([code, employee], index) => {
+                const row = document.createElement('tr');
+                row.className = 'table-row-animate hover:bg-blue-50';
+                
+                row.innerHTML = `
+                    <td class="text-center">${index + 1}</td>
+                    <td>${code}</td>
+                    <td>${employee.fullName}</td>
+                    <td>${employee.position || '-'}</td>
+                    <td>${employee.department || '-'}</td>
+                    <td>${formatJalaliDate(employee.registrationDate)}</td>
+                    <td>
+                        <button class="edit-employee bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded-md text-xs" data-code="${code}">ویرایش</button>
+                        <button class="delete-employee bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded-md text-xs" data-code="${code}">حذف</button>
+                    </td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+            
+            // اضافه کردن رویداد به دکمه‌های ویرایش و حذف
+            document.querySelectorAll('.edit-employee').forEach(button => {
+                button.addEventListener('click', function() {
+                    const code = this.getAttribute('data-code');
+                    editEmployee(code);
+                });
+            });
+            
+            document.querySelectorAll('.delete-employee').forEach(button => {
+                button.addEventListener('click', function() {
+                    const code = this.getAttribute('data-code');
+                    deleteEmployee(code);
+                });
+            });
+        }
+        
+        // ویرایش کارمند
+        function editEmployee(code) {
+            const employee = employees[code];
+            if (!employee) return;
+            
+            document.getElementById('employeeCodeInput').value = code;
+            document.getElementById('employeeCodeInput').disabled = true;
+            document.getElementById('fullName').value = employee.fullName;
+            document.getElementById('position').value = employee.position || '';
+            document.getElementById('department').value = employee.department || '';
+            
+            document.getElementById('registerModal').classList.remove('hidden');
+        }
+        
+        // حذف کارمند
+        function deleteEmployee(code) {
+            if (!confirm(`آیا از حذف کارمند با کد ${code} اطمینان دارید؟`)) return;
+            
+            delete employees[code];
+            localStorage.setItem('employees', JSON.stringify(employees));
+            
+            // حذف رکوردهای حضور و غیاب مرتبط
+            attendance = attendance.filter(record => record.employeeCode !== code);
+            localStorage.setItem('attendance', JSON.stringify(attendance));
+            
+            renderEmployeesTable();
+            renderAttendanceTable();
+            
+            alert('کارمند با موفقیت حذف شد.');
+        }
+        
+        // نمایش اطلاعات کارمند با وارد کردن کد پرسنلی
+        document.getElementById('employeeCode').addEventListener('input', function() {
+            const code = this.value.trim();
+            const employeeInfo = document.getElementById('employeeInfo');
+            
+            if (code && employees[code]) {
+                const employee = employees[code];
+                document.getElementById('infoFullName').textContent = employee.fullName;
+                document.getElementById('infoPosition').textContent = employee.position || '-';
+                document.getElementById('infoDepartment').textContent = employee.department || '-';
+                employeeInfo.classList.remove('hidden');
+            } else {
+                employeeInfo.classList.add('hidden');
+            }
+        });
+        
+        // نمایش مدال ثبت نام
+        function showRegisterModal() {
+            const modal = document.getElementById('registerModal');
+            modal.classList.remove('hidden');
+            
+            // پاک کردن و آماده‌سازی فرم
+            document.getElementById('employeeCodeInput').value = '';
+            document.getElementById('employeeCodeInput').disabled = false;
+            document.getElementById('fullName').value = '';
+            document.getElementById('position').value = '';
+            document.getElementById('department').value = '';
+        }
+        
+        document.getElementById('registerBtn').addEventListener('click', showRegisterModal);
+        document.getElementById('registerBtnTab').addEventListener('click', showRegisterModal);
+        
+        // بستن مدال
+        document.getElementById('closeRegisterModal').addEventListener('click', function() {
+            document.getElementById('registerModal').classList.add('hidden');
+        });
+        
+        // ذخیره اطلاعات کارمند جدید
+        document.getElementById('saveEmployeeBtn').addEventListener('click', function() {
+            const employeeCode = document.getElementById('employeeCodeInput').value.trim();
+            const fullName = document.getElementById('fullName').value.trim();
+            const position = document.getElementById('position').value.trim();
+            const department = document.getElementById('department').value;
+            
+            if (!employeeCode || employeeCode.length < 4) {
+                alert('لطفاً کد پرسنلی معتبر وارد کنید (حداقل 4 کاراکتر).');
+                return;
+            }
+            
+            if (!fullName) {
+                alert('لطفاً نام و نام خانوادگی را وارد کنید.');
+                return;
+            }
+            
+            // بررسی تکراری نبودن کد پرسنلی در حالت ثبت جدید
+            if (!document.getElementById('employeeCodeInput').disabled && employees[employeeCode]) {
+                alert('این کد پرسنلی قبلاً ثبت شده است. لطفاً کد دیگری وارد کنید.');
+                return;
+            }
+            
+            // ذخیره اطلاعات کارمند
+            employees[employeeCode] = {
+                fullName,
+                position,
+                department,
+                registrationDate: employees[employeeCode]?.registrationDate || new Date().toISOString()
+            };
+            
+            localStorage.setItem('employees', JSON.stringify(employees));
+            
+            // بستن مدال و نمایش پیام موفقیت
+            document.getElementById('registerModal').classList.add('hidden');
+            
+            if (document.getElementById('employeeCodeInput').disabled) {
+                alert(`اطلاعات کارمند با کد ${employeeCode} با موفقیت به‌روزرسانی شد.`);
+            } else {
+                alert(`کارمند جدید با کد پرسنلی ${employeeCode} با موفقیت ثبت شد.`);
+            }
+            
+            // به‌روزرسانی جداول
+            renderEmployeesTable();
+        });
+        
+        // ثبت ورود
+        document.getElementById('checkInBtn').addEventListener('click', function() {
+            const employeeCode = document.getElementById('employeeCode').value.trim();
+            
+            if (!employeeCode) {
+                alert('لطفاً کد پرسنلی را وارد کنید.');
+                return;
+            }
+            
+            if (!employees[employeeCode]) {
+                alert('کد پرسنلی نامعتبر است. لطفاً ابتدا ثبت نام کنید.');
+                return;
+            }
+            
+            // بررسی عدم ثبت ورود قبلی در همان روز
+            const now = new Date();
+            const today = formatJalaliDate(now);
+            const existingRecord = attendance.find(record => 
+                record.employeeCode === employeeCode && 
+                formatJalaliDate(record.checkInTime) === today && 
+                !record.checkOutTime
+            );
+            
+            if (existingRecord) {
+                alert('شما قبلاً ورود خود را ثبت کرده‌اید. لطفاً ابتدا خروج را ثبت کنید.');
+                return;
+            }
+            
+            // ثبت رکورد جدید
+            const newRecord = {
+                id: Date.now().toString(),
+                employeeCode,
+                date: today,
+                checkInTime: now.toISOString(),
+                checkOutTime: null
+            };
+            
+            attendance.unshift(newRecord);
+            localStorage.setItem('attendance', JSON.stringify(attendance));
+            
+            // به‌روزرسانی جدول
+            renderAttendanceTable();
+            document.getElementById('employeeCode').value = '';
+            document.getElementById('employeeInfo').classList.add('hidden');
+            
+            alert('ورود شما با موفقیت ثبت شد.');
+        });
+        
+        // ثبت خروج
+        document.getElementById('checkOutBtn').addEventListener('click', function() {
+            const employeeCode = document.getElementById('employeeCode').value.trim();
+            
+            if (!employeeCode) {
+                alert('لطفاً کد پرسنلی را وارد کنید.');
+                return;
+            }
+            
+            if (!employees[employeeCode]) {
+                alert('کد پرسنلی نامعتبر است.');
+                return;
+            }
+            
+            // پیدا کردن آخرین رکورد ورود بدون خروج
+            const now = new Date();
+            const today = formatJalaliDate(now);
+            
+            // جستجو برای رکورد ورود بدون خروج
+            let recordIndex = -1;
+            for (let i = 0; i < attendance.length; i++) {
+                if (attendance[i].employeeCode === employeeCode && 
+                    !attendance[i].checkOutTime && 
+                    formatJalaliDate(attendance[i].checkInTime) === today) {
+                    recordIndex = i;
+                    break;
+                }
+            }
+            
+            if (recordIndex === -1) {
+                alert('ابتدا باید ورود خود را ثبت کنید.');
+                return;
+            }
+            
+            // ثبت زمان خروج
+            attendance[recordIndex].checkOutTime = now.toISOString();
+            localStorage.setItem('attendance', JSON.stringify(attendance));
+            
+            // به‌روزرسانی جدول
+            renderAttendanceTable();
+            document.getElementById('employeeCode').value = '';
+            document.getElementById('employeeInfo').classList.add('hidden');
+            
+            alert('خروج شما با موفقیت ثبت شد.');
+        });
+        
+        // تغییر تب‌ها
+        document.getElementById('attendanceTabBtn').addEventListener('click', function() {
+            document.getElementById('attendanceTab').classList.remove('hidden');
+            document.getElementById('employeesTab').classList.add('hidden');
+            document.getElementById('attendanceTabBtn').classList.add('tab-active');
+            document.getElementById('employeesTabBtn').classList.remove('tab-active');
+        });
+        
+        document.getElementById('employeesTabBtn').addEventListener('click', function() {
+            document.getElementById('attendanceTab').classList.add('hidden');
+            document.getElementById('employeesTab').classList.remove('hidden');
+            document.getElementById('attendanceTabBtn').classList.remove('tab-active');
+            document.getElementById('employeesTabBtn').classList.add('tab-active');
+            renderEmployeesTable();
+        });
+        
+        // نمایش اولیه جدول
+        renderAttendanceTable();
+        
+        // بستن مدال با کلیک خارج از آن
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('registerModal');
+            if (event.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+        
+        // توابع خروجی گرفتن
+        
+        // خروجی JSON
+        function exportToJson(data, filename) {
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+        
+        // خروجی اکسل
+        function exportToExcel(data, sheetName, filename) {
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            XLSX.writeFile(wb, filename);
+        }
+        
+        // آماده‌سازی داده‌های حضور و غیاب برای خروجی
+        function prepareAttendanceData() {
+            return attendance.map(record => {
+                const employee = employees[record.employeeCode] || { fullName: 'نامشخص' };
+                
+                // محاسبه مدت حضور
+                let duration = '';
+                if (record.checkInTime && record.checkOutTime) {
+                    const checkIn = new Date(record.checkInTime);
+                    const checkOut = new Date(record.checkOutTime);
+                    const diff = checkOut - checkIn;
+                    const hours = Math.floor(diff / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    duration = `${hours} ساعت و ${minutes} دقیقه`;
+                }
+                
+                return {
+                    'کد پرسنلی': record.employeeCode,
+                    'نام و نام خانوادگی': employee.fullName,
+                    'تاریخ': formatJalaliDate(record.checkInTime),
+                    'زمان ورود': formatTime(record.checkInTime),
+                    'زمان خروج': formatTime(record.checkOutTime),
+                    'مدت حضور': duration || '-',
+                    'وضعیت': record.checkOutTime ? 'خروج' : 'حاضر'
+                };
+            });
+        }
+        
+        // آماده‌سازی داده‌های کارمندان برای خروجی
+        function prepareEmployeesData() {
+            return Object.entries(employees).map(([code, employee]) => {
+                return {
+                    'کد پرسنلی': code,
+                    'نام و نام خانوادگی': employee.fullName,
+                    'سمت': employee.position || '-',
+                    'بخش': employee.department || '-',
+                    'تاریخ ثبت نام': formatJalaliDate(employee.registrationDate)
+                };
+            });
+        }
+        
+        // رویدادهای دکمه‌های خروجی
+        document.getElementById('exportAttendanceJson').addEventListener('click', function() {
+            const data = prepareAttendanceData();
+            if (data.length === 0) {
+                alert('هیچ رکوردی برای خروجی گرفتن وجود ندارد.');
+                return;
+            }
+            exportToJson(data, 'attendance_records.json');
+        });
+        
+        document.getElementById('exportAttendanceExcel').addEventListener('click', function() {
+            const data = prepareAttendanceData();
+            if (data.length === 0) {
+                alert('هیچ رکوردی برای خروجی گرفتن وجود ندارد.');
+                return;
+            }
+            exportToExcel(data, 'حضور و غیاب', 'attendance_records.xlsx');
+        });
+        
+        document.getElementById('exportEmployeesJson').addEventListener('click', function() {
+            const data = prepareEmployeesData();
+            if (data.length === 0) {
+                alert('هیچ کارمندی برای خروجی گرفتن وجود ندارد.');
+                return;
+            }
+            exportToJson(data, 'employees_data.json');
+        });
+        
+        document.getElementById('exportEmployeesExcel').addEventListener('click', function() {
+            const data = prepareEmployeesData();
+            if (data.length === 0) {
+                alert('هیچ کارمندی برای خروجی گرفتن وجود ندارد.');
+                return;
+            }
+            exportToExcel(data, 'کارمندان', 'employees_data.xlsx');
+        });
+        
+        // دکمه‌های خروجی در تب کارمندان
+        document.getElementById('exportEmployeesJsonTab').addEventListener('click', function() {
+            const data = prepareEmployeesData();
+            if (data.length === 0) {
+                alert('هیچ کارمندی برای خروجی گرفتن وجود ندارد.');
+                return;
+            }
+            exportToJson(data, 'employees_data.json');
+        });
+        
+        document.getElementById('exportEmployeesExcelTab').addEventListener('click', function() {
+            const data = prepareEmployeesData();
+            if (data.length === 0) {
+                alert('هیچ کارمندی برای خروجی گرفتن وجود ندارد.');
+                return;
+            }
+            exportToExcel(data, 'کارمندان', 'employees_data.xlsx');
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93f3186ea4b1b6a1',t:'MTc0NzE0OTE2MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
